@@ -2,7 +2,11 @@
 <html lang="de">
 <head>
   <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
+  <meta name="mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+  <meta name="theme-color" content="#0f172a">
   <title>Dart Scorer Pro</title>
   <style>
     :root {
@@ -25,23 +29,103 @@
       font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
       user-select: none;
       -webkit-tap-highlight-color: transparent;
+      touch-action: manipulation;
     }
 
-    body {
+    html, body {
       background-color: var(--bg);
       color: var(--text);
       min-height: 100vh;
-      display: flex;
-      justify-content: center;
-      padding: 12px;
+      min-height: -webkit-fill-available;
+      overflow-x: hidden;
+      overscroll-behavior: none;
     }
 
+    body {
+      display: flex;
+      justify-content: center;
+      padding: env(safe-area-inset-top, 12px) env(safe-area-inset-right, 12px) env(safe-area-inset-bottom, 12px) env(safe-area-inset-left, 12px);
+    }
+
+    /* Auth Screen */
+    #auth-screen {
+      position: fixed;
+      inset: 0;
+      background: var(--bg);
+      z-index: 999;
+      display: flex;
+      flex-direction: column;
+      justify-content: center;
+      align-items: center;
+      padding: 24px;
+    }
+
+    .auth-box {
+      background: var(--card-bg);
+      border-radius: var(--radius);
+      padding: 24px;
+      width: 100%;
+      max-width: 380px;
+      text-align: center;
+      box-shadow: 0 15px 30px rgba(0, 0, 0, 0.4);
+    }
+
+    .auth-title {
+      font-size: 1.4rem;
+      font-weight: 800;
+      margin-bottom: 8px;
+    }
+
+    .auth-desc {
+      font-size: 0.85rem;
+      color: var(--text-muted);
+      margin-bottom: 20px;
+    }
+
+    .auth-input {
+      width: 100%;
+      background: var(--card-sub);
+      border: 1px solid rgba(255, 255, 255, 0.1);
+      border-radius: 10px;
+      padding: 14px;
+      color: var(--text);
+      font-size: 1rem;
+      outline: none;
+      margin-bottom: 12px;
+      text-align: center;
+    }
+
+    .auth-btn {
+      width: 100%;
+      background: var(--accent);
+      color: white;
+      border: none;
+      border-radius: 10px;
+      padding: 14px;
+      font-size: 1rem;
+      font-weight: 700;
+      cursor: pointer;
+    }
+
+    .auth-btn:active {
+      background: var(--accent-hover);
+    }
+
+    .auth-error {
+      color: var(--danger);
+      font-size: 0.85rem;
+      margin-top: 10px;
+      display: none;
+    }
+
+    /* Main App Container */
     .app-container {
       width: 100%;
       max-width: 480px;
       display: flex;
       flex-direction: column;
-      gap: 12px;
+      gap: 10px;
+      padding-top: 6px;
     }
 
     /* Top Bar */
@@ -50,7 +134,7 @@
       justify-content: space-between;
       align-items: center;
       background: var(--card-bg);
-      padding: 10px 16px;
+      padding: 8px 14px;
       border-radius: var(--radius);
     }
 
@@ -68,7 +152,6 @@
       font-weight: 700;
       font-size: 0.9rem;
       cursor: pointer;
-      transition: all 0.2s;
     }
 
     .mode-btn.active {
@@ -76,39 +159,44 @@
       color: #fff;
     }
 
+    .btn-action {
+      background: var(--card-sub);
+      color: var(--text);
+      border: none;
+      padding: 6px 10px;
+      border-radius: 8px;
+      font-size: 0.8rem;
+      font-weight: 600;
+      cursor: pointer;
+    }
+
     .btn-reset {
       background: rgba(239, 68, 68, 0.15);
       color: var(--danger);
       border: 1px solid rgba(239, 68, 68, 0.4);
-      padding: 6px 12px;
-      border-radius: 8px;
-      font-size: 0.85rem;
-      font-weight: 600;
-      cursor: pointer;
     }
 
     /* Main Score Display */
     .score-card {
       background: var(--card-bg);
       border-radius: var(--radius);
-      padding: 20px 16px;
+      padding: 16px;
       text-align: center;
       box-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.3);
-      position: relative;
     }
 
     .remaining-label {
-      font-size: 0.85rem;
+      font-size: 0.8rem;
       color: var(--text-muted);
       text-transform: uppercase;
       letter-spacing: 1px;
     }
 
     .score-display {
-      font-size: 4.8rem;
+      font-size: 4.4rem;
       font-weight: 900;
       line-height: 1;
-      margin: 8px 0;
+      margin: 6px 0;
       letter-spacing: -2px;
       color: var(--text);
     }
@@ -119,7 +207,7 @@
       border: 1px solid rgba(16, 185, 129, 0.3);
       border-radius: 10px;
       padding: 8px 12px;
-      margin-top: 8px;
+      margin-top: 6px;
       display: flex;
       justify-content: center;
       align-items: center;
@@ -141,7 +229,7 @@
       font-size: 1.15rem;
       font-weight: 800;
       color: #34d399;
-      letter-spacing: 1px;
+      letter-spacing: 0.5px;
     }
 
     /* Stats Grid */
@@ -153,19 +241,19 @@
 
     .stat-card {
       background: var(--card-bg);
-      padding: 10px;
+      padding: 8px;
       border-radius: 10px;
       text-align: center;
     }
 
     .stat-val {
-      font-size: 1.25rem;
+      font-size: 1.2rem;
       font-weight: 800;
       color: var(--text);
     }
 
     .stat-title {
-      font-size: 0.7rem;
+      font-size: 0.65rem;
       color: var(--text-muted);
       margin-top: 2px;
       text-transform: uppercase;
@@ -175,20 +263,20 @@
     .input-wrapper {
       background: var(--card-bg);
       border-radius: var(--radius);
-      padding: 10px 16px;
+      padding: 8px 14px;
       display: flex;
       justify-content: space-between;
       align-items: center;
-      min-height: 52px;
+      min-height: 48px;
     }
 
     .input-label {
-      font-size: 0.9rem;
+      font-size: 0.85rem;
       color: var(--text-muted);
     }
 
     .current-input {
-      font-size: 1.8rem;
+      font-size: 1.7rem;
       font-weight: 800;
       color: var(--accent);
       min-width: 60px;
@@ -207,18 +295,16 @@
       color: var(--text);
       border: 1px solid var(--card-sub);
       border-radius: 12px;
-      padding: 16px 0;
-      font-size: 1.4rem;
+      padding: 14px 0;
+      font-size: 1.35rem;
       font-weight: 700;
       cursor: pointer;
       display: flex;
       justify-content: center;
       align-items: center;
-      transition: background 0.1s, transform 0.05s;
     }
 
     .key-btn:active {
-      transform: scale(0.97);
       background: var(--card-sub);
     }
 
@@ -226,7 +312,6 @@
       background: var(--accent);
       color: #fff;
       border: none;
-      grid-column: span 1;
     }
 
     .key-btn.action-enter:active {
@@ -263,19 +348,19 @@
     .history-card {
       background: var(--card-bg);
       border-radius: var(--radius);
-      padding: 12px;
-      max-height: 110px;
+      padding: 10px;
+      max-height: 90px;
       overflow-y: auto;
       display: flex;
       flex-direction: column-reverse;
-      gap: 6px;
+      gap: 4px;
     }
 
     .history-row {
       display: flex;
       justify-content: space-between;
-      font-size: 0.85rem;
-      padding: 4px 8px;
+      font-size: 0.8rem;
+      padding: 3px 6px;
       background: rgba(255, 255, 255, 0.02);
       border-radius: 6px;
     }
@@ -292,20 +377,33 @@
 </head>
 <body>
 
-<div class="app-container">
-  <!-- Top Bar -->
+<!-- Login Gate -->
+<div id="auth-screen">
+  <div class="auth-box">
+    <div class="auth-title">🔒 Gesperrt</div>
+    <div class="auth-desc">Bitte Master-Passwort eingeben</div>
+    <form onsubmit="handleAuthSubmit(event)">
+      <input type="password" id="auth-input" class="auth-input" placeholder="Passwort" autocomplete="current-password" required>
+      <button type="submit" class="auth-btn">Freischalten</button>
+    </form>
+    <div class="auth-error" id="auth-error">Falsches Passwort!</div>
+  </div>
+</div>
+
+<!-- App -->
+<div class="app-container" id="app-content" style="display: none;">
   <div class="top-bar">
     <div class="mode-select">
       <button class="mode-btn" id="btn-301" onclick="switchGameMode(301)">301</button>
       <button class="mode-btn" id="btn-501" onclick="switchGameMode(501)">501</button>
     </div>
-    <div style="display: flex; gap: 8px;">
-      <button class="btn-reset" onclick="undoLastThrow()" title="Letzten Wurf rückgängig machen">↩ Undo</button>
-      <button class="btn-reset" onclick="confirmReset()">Neu</button>
+    <div style="display: flex; gap: 6px;">
+      <button class="btn-action" onclick="undoLastThrow()" title="Rückgängig">↩ Undo</button>
+      <button class="btn-action btn-reset" onclick="confirmReset()">Neu</button>
+      <button class="btn-action" onclick="lockApp()" title="App sperren">🔒</button>
     </div>
   </div>
 
-  <!-- Score Display -->
   <div class="score-card">
     <div class="remaining-label">Restpunktzahl</div>
     <div class="score-display" id="score-val">501</div>
@@ -316,7 +414,6 @@
     </div>
   </div>
 
-  <!-- Stats Grid -->
   <div class="stats-grid">
     <div class="stat-card">
       <div class="stat-val" id="stat-avg">0.0</div>
@@ -332,13 +429,11 @@
     </div>
   </div>
 
-  <!-- Input Field -->
   <div class="input-wrapper">
     <span class="input-label">Aufnahme eingeben:</span>
     <span class="current-input" id="input-val">0</span>
   </div>
 
-  <!-- Quick Score Buttons -->
   <div class="quick-scores">
     <button class="quick-btn" onclick="submitQuickScore(26)">26</button>
     <button class="quick-btn" onclick="submitQuickScore(41)">41</button>
@@ -346,7 +441,6 @@
     <button class="quick-btn" onclick="submitQuickScore(100)">100</button>
   </div>
 
-  <!-- Keypad -->
   <div class="keypad-grid">
     <button class="key-btn" onclick="appendDigit('1')">1</button>
     <button class="key-btn" onclick="appendDigit('2')">2</button>
@@ -362,12 +456,65 @@
     <button class="key-btn action-enter" onclick="submitScore()">OK</button>
   </div>
 
-  <!-- History Log -->
   <div class="history-card" id="history-list"></div>
 </div>
 
 <script>
-  // Checkout-Tabelle (Offizielle 2- & 3-Dart Finish-Wege)
+  // ==========================================
+  // PASSWORT-KONFIGURATION (SHA-256 Hash)
+  // Standard-Passwort: "DartTargetBolide2026!"
+  // ==========================================
+  const PASSWORD_HASH = "80f837da266e76cf0e3d23199feae223668894dfeb6716fecf9ca5ec4ebdb654";
+  const AUTH_STORAGE_KEY = "dart_scorer_auth_token";
+  const STORAGE_KEY = "dart_scorer_state_v1";
+
+  // SHA-256 Generator
+  async function sha256(message) {
+    const msgBuffer = new TextEncoder().encode(message);
+    const hashBuffer = await crypto.subtle.digest('SHA-256', msgBuffer);
+    const hashArray = Array.from(new Uint8Array(hashBuffer));
+    return hashArray.map(b => b.toString(16).padStart(2, '0')).join('');
+  }
+
+  async function handleAuthSubmit(e) {
+    e.preventDefault();
+    const input = document.getElementById("auth-input").value;
+    const hash = await sha256(input);
+    
+    if (hash === PASSWORD_HASH) {
+      localStorage.setItem(AUTH_STORAGE_KEY, "authenticated_" + hash);
+      unlockUI();
+    } else {
+      document.getElementById("auth-error").style.display = "block";
+      document.getElementById("auth-input").value = "";
+    }
+  }
+
+  function checkAuth() {
+    const token = localStorage.getItem(AUTH_STORAGE_KEY);
+    if (token === "authenticated_" + PASSWORD_HASH) {
+      unlockUI();
+    } else {
+      document.getElementById("auth-screen").style.display = "flex";
+      document.getElementById("app-content").style.display = "none";
+    }
+  }
+
+  function unlockUI() {
+    document.getElementById("auth-screen").style.display = "none";
+    document.getElementById("app-content").style.display = "flex";
+    loadState();
+    renderUI();
+  }
+
+  function lockApp() {
+    localStorage.removeItem(AUTH_STORAGE_KEY);
+    location.reload();
+  }
+
+  // ==========================================
+  // DART APP LOGIK
+  // ==========================================
   const CHECKOUTS = {
     170: "T20 T20 Bull", 167: "T20 T19 Bull", 164: "T20 T18 Bull", 161: "T20 T17 Bull",
     160: "T20 T20 D20", 158: "T20 T20 D19", 157: "T20 T19 D20", 156: "T20 T20 D18",
@@ -380,7 +527,7 @@
     131: "T20 T13 D16", 130: "T20 T18 D8",  129: "T19 T16 D12", 128: "T18 T14 D16",
     127: "T20 T17 D8",  126: "T19 T19 D6",  125: "25 T20 D20",  124: "T20 T16 D8",
     123: "T19 T16 D9",  122: "T18 T20 D4",  121: "T20 T15 D8",  120: "T20 20 D20",
-    119: "T19 T10 D16", 118: "T20 18 D20",  117: "T20 17 D20",  116: "T20 16 D20",
+    119: "T19 10 D16", 118: "T20 18 D20",  117: "T20 17 D20",  116: "T20 16 D20",
     115: "T20 15 D20",  114: "T20 14 D20",  113: "T20 13 D20",  112: "T20 20 D16",
     111: "T20 19 D16",  110: "T20 18 D16",  109: "T20 17 D16",  108: "T20 16 D16",
     107: "T19 18 D16",  106: "T20 14 D16",  105: "T20 13 D16",  104: "T18 18 D16",
@@ -412,20 +559,16 @@
     3: "1 D1",          2: "D1"
   };
 
-  const STORAGE_KEY = "dart_scorer_state_v1";
-
   let state = {
     mode: 501,
     currentScore: 501,
-    history: [] // Array von Objekten: { score: Number, rest: Number, isBust: Boolean }
+    history: []
   };
 
   let inputBuffer = "";
 
-  // Initialisierung
   window.onload = () => {
-    loadState();
-    renderUI();
+    checkAuth();
   };
 
   function saveState() {
@@ -469,11 +612,10 @@
     }
   }
 
-  // Keypad & Input Logik
   function appendDigit(digit) {
     if (inputBuffer.length >= 3) return;
     const testVal = parseInt(inputBuffer + digit, 10);
-    if (testVal > 180) return; // 180 ist Maximum pro Aufnahme
+    if (testVal > 180) return;
     inputBuffer += digit;
     updateInputDisplay();
   }
@@ -502,7 +644,6 @@
 
     const rest = state.currentScore - score;
 
-    // Double Out Bust-Regeln
     if (rest < 0 || rest === 1) {
       alert("Überworfen (Bust)!");
       state.history.push({ score: 0, rest: state.currentScore, isBust: true, attempted: score });
@@ -540,16 +681,11 @@
     renderUI();
   }
 
-  // Rendering
   function renderUI() {
-    // Mode Buttons
     document.getElementById("btn-301").className = `mode-btn ${state.mode === 301 ? "active" : ""}`;
     document.getElementById("btn-501").className = `mode-btn ${state.mode === 501 ? "active" : ""}`;
-
-    // Main Score
     document.getElementById("score-val").innerText = state.currentScore;
 
-    // Checkout Path
     const checkoutBox = document.getElementById("checkout-box");
     const checkoutVal = document.getElementById("checkout-val");
     if (CHECKOUTS[state.currentScore]) {
@@ -559,7 +695,6 @@
       checkoutBox.className = "checkout-box none";
     }
 
-    // Stats
     const totalThrows = state.history.length;
     const dartsThrown = totalThrows * 3;
     const totalScored = state.mode - state.currentScore;
@@ -575,7 +710,6 @@
       document.getElementById("stat-last").innerText = "-";
     }
 
-    // History Log
     const list = document.getElementById("history-list");
     list.innerHTML = "";
     state.history.forEach((h, index) => {
@@ -589,8 +723,8 @@
     });
   }
 
-  // Physische Tastatur-Unterstützung
   window.addEventListener("keydown", (e) => {
+    if (document.getElementById("app-content").style.display === "none") return;
     if (e.key >= "0" && e.key <= "9") {
       appendDigit(e.key);
     } else if (e.key === "Backspace") {
