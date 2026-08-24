@@ -1,0 +1,605 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+  <title>Dart Scorer Pro</title>
+  <style>
+    :root {
+      --bg: #0f172a;
+      --card-bg: #1e293b;
+      --card-sub: #334155;
+      --accent: #10b981;
+      --accent-hover: #059669;
+      --text: #f8fafc;
+      --text-muted: #94a3b8;
+      --danger: #ef4444;
+      --warning: #f59e0b;
+      --radius: 14px;
+    }
+
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+      user-select: none;
+      -webkit-tap-highlight-color: transparent;
+    }
+
+    body {
+      background-color: var(--bg);
+      color: var(--text);
+      min-height: 100vh;
+      display: flex;
+      justify-content: center;
+      padding: 12px;
+    }
+
+    .app-container {
+      width: 100%;
+      max-width: 480px;
+      display: flex;
+      flex-direction: column;
+      gap: 12px;
+    }
+
+    /* Top Bar */
+    .top-bar {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      background: var(--card-bg);
+      padding: 10px 16px;
+      border-radius: var(--radius);
+    }
+
+    .mode-select {
+      display: flex;
+      gap: 6px;
+    }
+
+    .mode-btn {
+      background: var(--card-sub);
+      color: var(--text);
+      border: none;
+      padding: 6px 14px;
+      border-radius: 8px;
+      font-weight: 700;
+      font-size: 0.9rem;
+      cursor: pointer;
+      transition: all 0.2s;
+    }
+
+    .mode-btn.active {
+      background: var(--accent);
+      color: #fff;
+    }
+
+    .btn-reset {
+      background: rgba(239, 68, 68, 0.15);
+      color: var(--danger);
+      border: 1px solid rgba(239, 68, 68, 0.4);
+      padding: 6px 12px;
+      border-radius: 8px;
+      font-size: 0.85rem;
+      font-weight: 600;
+      cursor: pointer;
+    }
+
+    /* Main Score Display */
+    .score-card {
+      background: var(--card-bg);
+      border-radius: var(--radius);
+      padding: 20px 16px;
+      text-align: center;
+      box-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.3);
+      position: relative;
+    }
+
+    .remaining-label {
+      font-size: 0.85rem;
+      color: var(--text-muted);
+      text-transform: uppercase;
+      letter-spacing: 1px;
+    }
+
+    .score-display {
+      font-size: 4.8rem;
+      font-weight: 900;
+      line-height: 1;
+      margin: 8px 0;
+      letter-spacing: -2px;
+      color: var(--text);
+    }
+
+    /* Checkout Card */
+    .checkout-box {
+      background: rgba(16, 185, 129, 0.1);
+      border: 1px solid rgba(16, 185, 129, 0.3);
+      border-radius: 10px;
+      padding: 8px 12px;
+      margin-top: 8px;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      gap: 8px;
+    }
+
+    .checkout-box.none {
+      display: none;
+    }
+
+    .checkout-label {
+      font-size: 0.75rem;
+      font-weight: 700;
+      color: var(--accent);
+      text-transform: uppercase;
+    }
+
+    .checkout-route {
+      font-size: 1.15rem;
+      font-weight: 800;
+      color: #34d399;
+      letter-spacing: 1px;
+    }
+
+    /* Stats Grid */
+    .stats-grid {
+      display: grid;
+      grid-template-columns: 1fr 1fr 1fr;
+      gap: 8px;
+    }
+
+    .stat-card {
+      background: var(--card-bg);
+      padding: 10px;
+      border-radius: 10px;
+      text-align: center;
+    }
+
+    .stat-val {
+      font-size: 1.25rem;
+      font-weight: 800;
+      color: var(--text);
+    }
+
+    .stat-title {
+      font-size: 0.7rem;
+      color: var(--text-muted);
+      margin-top: 2px;
+      text-transform: uppercase;
+    }
+
+    /* Input Display */
+    .input-wrapper {
+      background: var(--card-bg);
+      border-radius: var(--radius);
+      padding: 10px 16px;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      min-height: 52px;
+    }
+
+    .input-label {
+      font-size: 0.9rem;
+      color: var(--text-muted);
+    }
+
+    .current-input {
+      font-size: 1.8rem;
+      font-weight: 800;
+      color: var(--accent);
+      min-width: 60px;
+      text-align: right;
+    }
+
+    /* Keypad */
+    .keypad-grid {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 8px;
+    }
+
+    .key-btn {
+      background: var(--card-bg);
+      color: var(--text);
+      border: 1px solid var(--card-sub);
+      border-radius: 12px;
+      padding: 16px 0;
+      font-size: 1.4rem;
+      font-weight: 700;
+      cursor: pointer;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      transition: background 0.1s, transform 0.05s;
+    }
+
+    .key-btn:active {
+      transform: scale(0.97);
+      background: var(--card-sub);
+    }
+
+    .key-btn.action-enter {
+      background: var(--accent);
+      color: #fff;
+      border: none;
+      grid-column: span 1;
+    }
+
+    .key-btn.action-enter:active {
+      background: var(--accent-hover);
+    }
+
+    .key-btn.action-del {
+      color: var(--danger);
+    }
+
+    /* Quick Inputs */
+    .quick-scores {
+      display: grid;
+      grid-template-columns: repeat(4, 1fr);
+      gap: 6px;
+    }
+
+    .quick-btn {
+      background: var(--card-sub);
+      color: var(--text);
+      border: none;
+      padding: 8px 0;
+      border-radius: 8px;
+      font-size: 0.85rem;
+      font-weight: 700;
+      cursor: pointer;
+    }
+
+    .quick-btn:active {
+      background: #475569;
+    }
+
+    /* History / Log */
+    .history-card {
+      background: var(--card-bg);
+      border-radius: var(--radius);
+      padding: 12px;
+      max-height: 110px;
+      overflow-y: auto;
+      display: flex;
+      flex-direction: column-reverse;
+      gap: 6px;
+    }
+
+    .history-row {
+      display: flex;
+      justify-content: space-between;
+      font-size: 0.85rem;
+      padding: 4px 8px;
+      background: rgba(255, 255, 255, 0.02);
+      border-radius: 6px;
+    }
+
+    .history-score {
+      font-weight: 700;
+      color: var(--accent);
+    }
+
+    .history-rest {
+      color: var(--text-muted);
+    }
+  </style>
+</head>
+<body>
+
+<div class="app-container">
+  <!-- Top Bar -->
+  <div class="top-bar">
+    <div class="mode-select">
+      <button class="mode-btn" id="btn-301" onclick="switchGameMode(301)">301</button>
+      <button class="mode-btn" id="btn-501" onclick="switchGameMode(501)">501</button>
+    </div>
+    <div style="display: flex; gap: 8px;">
+      <button class="btn-reset" onclick="undoLastThrow()" title="Letzten Wurf rückgängig machen">↩ Undo</button>
+      <button class="btn-reset" onclick="confirmReset()">Neu</button>
+    </div>
+  </div>
+
+  <!-- Score Display -->
+  <div class="score-card">
+    <div class="remaining-label">Restpunktzahl</div>
+    <div class="score-display" id="score-val">501</div>
+    
+    <div class="checkout-box none" id="checkout-box">
+      <span class="checkout-label">Finish:</span>
+      <span class="checkout-route" id="checkout-val">-</span>
+    </div>
+  </div>
+
+  <!-- Stats Grid -->
+  <div class="stats-grid">
+    <div class="stat-card">
+      <div class="stat-val" id="stat-avg">0.0</div>
+      <div class="stat-title">3-Dart Avg</div>
+    </div>
+    <div class="stat-card">
+      <div class="stat-val" id="stat-darts">0</div>
+      <div class="stat-title">Darts</div>
+    </div>
+    <div class="stat-card">
+      <div class="stat-val" id="stat-last">-</div>
+      <div class="stat-title">Letzter Wurf</div>
+    </div>
+  </div>
+
+  <!-- Input Field -->
+  <div class="input-wrapper">
+    <span class="input-label">Aufnahme eingeben:</span>
+    <span class="current-input" id="input-val">0</span>
+  </div>
+
+  <!-- Quick Score Buttons -->
+  <div class="quick-scores">
+    <button class="quick-btn" onclick="submitQuickScore(26)">26</button>
+    <button class="quick-btn" onclick="submitQuickScore(41)">41</button>
+    <button class="quick-btn" onclick="submitQuickScore(60)">60</button>
+    <button class="quick-btn" onclick="submitQuickScore(100)">100</button>
+  </div>
+
+  <!-- Keypad -->
+  <div class="keypad-grid">
+    <button class="key-btn" onclick="appendDigit('1')">1</button>
+    <button class="key-btn" onclick="appendDigit('2')">2</button>
+    <button class="key-btn" onclick="appendDigit('3')">3</button>
+    <button class="key-btn" onclick="appendDigit('4')">4</button>
+    <button class="key-btn" onclick="appendDigit('5')">5</button>
+    <button class="key-btn" onclick="appendDigit('6')">6</button>
+    <button class="key-btn" onclick="appendDigit('7')">7</button>
+    <button class="key-btn" onclick="appendDigit('8')">8</button>
+    <button class="key-btn" onclick="appendDigit('9')">9</button>
+    <button class="key-btn action-del" onclick="deleteDigit()">⌫</button>
+    <button class="key-btn" onclick="appendDigit('0')">0</button>
+    <button class="key-btn action-enter" onclick="submitScore()">OK</button>
+  </div>
+
+  <!-- History Log -->
+  <div class="history-card" id="history-list"></div>
+</div>
+
+<script>
+  // Checkout-Tabelle (Offizielle 2- & 3-Dart Finish-Wege)
+  const CHECKOUTS = {
+    170: "T20 T20 Bull", 167: "T20 T19 Bull", 164: "T20 T18 Bull", 161: "T20 T17 Bull",
+    160: "T20 T20 D20", 158: "T20 T20 D19", 157: "T20 T19 D20", 156: "T20 T20 D18",
+    155: "T20 T19 D19", 154: "T20 T18 D20", 153: "T20 T19 D18", 152: "T20 T20 D16",
+    151: "T20 T17 D20", 150: "T20 T18 D18", 149: "T20 T19 D16", 148: "T20 T16 D20",
+    147: "T20 T17 D18", 146: "T20 T18 D16", 145: "T20 T15 D20", 144: "T20 T20 D12",
+    143: "T20 T17 D16", 142: "T20 T14 D20", 141: "T20 T19 D12", 140: "T20 T20 D10",
+    139: "T19 T14 D20", 138: "T20 T18 D12", 137: "T19 T16 D16", 136: "T20 T20 D8",
+    135: "T20 T15 D15", 134: "T20 T14 D16", 133: "T20 T19 D8",  132: "T20 T16 D12",
+    131: "T20 T13 D16", 130: "T20 T18 D8",  129: "T19 T16 D12", 128: "T18 T14 D16",
+    127: "T20 T17 D8",  126: "T19 T19 D6",  125: "25 T20 D20",  124: "T20 T16 D8",
+    123: "T19 T16 D9",  122: "T18 T20 D4",  121: "T20 T15 D8",  120: "T20 20 D20",
+    119: "T19 T10 D16", 118: "T20 18 D20",  117: "T20 17 D20",  116: "T20 16 D20",
+    115: "T20 15 D20",  114: "T20 14 D20",  113: "T20 13 D20",  112: "T20 20 D16",
+    111: "T20 19 D16",  110: "T20 18 D16",  109: "T20 17 D16",  108: "T20 16 D16",
+    107: "T19 18 D16",  106: "T20 14 D16",  105: "T20 13 D16",  104: "T18 18 D16",
+    103: "T20 11 D16",  102: "T20 10 D16",  101: "T17 18 D16",  100: "T20 D20",
+    99: "T19 10 D16",   98: "T20 D19",      97: "T19 D20",      96: "T20 D18",
+    95: "T19 D19",      94: "T18 D20",      93: "T19 D18",      92: "T20 D16",
+    91: "T17 D20",      90: "T18 D18",      89: "T19 D16",      88: "T16 D20",
+    87: "T17 D18",      86: "T18 D16",      85: "T15 D20",      84: "T20 D12",
+    83: "T17 D16",      82: "T14 D20",      81: "T15 D18",      80: "T20 D10",
+    79: "T13 D20",      78: "T18 D12",      77: "T15 D16",      76: "T20 D8",
+    75: "T17 D12",      74: "T14 D16",      73: "T19 D8",       72: "T16 D12",
+    71: "T13 D16",      70: "T18 D8",       69: "T15 D12",      68: "T20 D4",
+    67: "T17 D8",       66: "T10 D18",      65: "25 D20",       64: "T16 D8",
+    63: "T13 D12",      62: "T10 D16",      61: "T15 D8",       60: "20 D20",
+    59: "19 D20",       58: "18 D20",       57: "17 D20",       56: "16 D20",
+    55: "15 D20",       54: "14 D20",       53: "13 D20",       52: "12 D20",
+    51: "11 D20",       50: "Bull (D25)",   49: "9 D20",        48: "16 D16",
+    47: "15 D16",       46: "14 D16",       45: "13 D16",       44: "12 D16",
+    43: "11 D16",       42: "10 D16",       41: "9 D16",        40: "D20",
+    39: "7 D16",        38: "D19",          37: "5 D16",        36: "D18",
+    35: "3 D16",        34: "D17",          33: "1 D16",        32: "D16",
+    31: "15 D8",        30: "D15",          29: "13 D8",        28: "D14",
+    27: "11 D8",        26: "D13",          25: "9 D8",         24: "D12",
+    23: "7 D8",         22: "D11",          21: "5 D8",         20: "D10",
+    19: "3 D8",         18: "D9",           17: "1 D8",         16: "D8",
+    15: "7 D4",         14: "D7",           13: "5 D4",         12: "D6",
+    11: "3 D4",         10: "D5",           9: "1 D4",          8: "D4",
+    7: "3 D2",          6: "D3",            5: "1 D2",          4: "D2",
+    3: "1 D1",          2: "D1"
+  };
+
+  const STORAGE_KEY = "dart_scorer_state_v1";
+
+  let state = {
+    mode: 501,
+    currentScore: 501,
+    history: [] // Array von Objekten: { score: Number, rest: Number, isBust: Boolean }
+  };
+
+  let inputBuffer = "";
+
+  // Initialisierung
+  window.onload = () => {
+    loadState();
+    renderUI();
+  };
+
+  function saveState() {
+    localStorage.setItem(STORAGE_KEY, JSON.stringify(state));
+  }
+
+  function loadState() {
+    const saved = localStorage.getItem(STORAGE_KEY);
+    if (saved) {
+      try {
+        state = JSON.parse(saved);
+      } catch (e) {
+        resetGame(501);
+      }
+    }
+  }
+
+  function switchGameMode(mode) {
+    if (state.history.length > 0) {
+      if (!confirm(`Neues Spiel ${mode} starten? Der aktuelle Spielstand wird zurückgesetzt.`)) {
+        return;
+      }
+    }
+    resetGame(mode);
+  }
+
+  function resetGame(mode = state.mode) {
+    state = {
+      mode: mode,
+      currentScore: mode,
+      history: []
+    };
+    inputBuffer = "";
+    saveState();
+    renderUI();
+  }
+
+  function confirmReset() {
+    if (confirm("Möchtest du das Spiel wirklich neu starten?")) {
+      resetGame(state.mode);
+    }
+  }
+
+  // Keypad & Input Logik
+  function appendDigit(digit) {
+    if (inputBuffer.length >= 3) return;
+    const testVal = parseInt(inputBuffer + digit, 10);
+    if (testVal > 180) return; // 180 ist Maximum pro Aufnahme
+    inputBuffer += digit;
+    updateInputDisplay();
+  }
+
+  function deleteDigit() {
+    inputBuffer = inputBuffer.slice(0, -1);
+    updateInputDisplay();
+  }
+
+  function updateInputDisplay() {
+    document.getElementById("input-val").innerText = inputBuffer === "" ? "0" : inputBuffer;
+  }
+
+  function submitQuickScore(score) {
+    inputBuffer = String(score);
+    submitScore();
+  }
+
+  function submitScore() {
+    const score = parseInt(inputBuffer === "" ? "0" : inputBuffer, 10);
+    if (isNaN(score) || score < 0 || score > 180) {
+      inputBuffer = "";
+      updateInputDisplay();
+      return;
+    }
+
+    const rest = state.currentScore - score;
+
+    // Double Out Bust-Regeln
+    if (rest < 0 || rest === 1) {
+      alert("Überworfen (Bust)!");
+      state.history.push({ score: 0, rest: state.currentScore, isBust: true, attempted: score });
+    } else if (rest === 0) {
+      state.currentScore = 0;
+      state.history.push({ score: score, rest: 0, isBust: false });
+      saveState();
+      renderUI();
+      setTimeout(() => {
+        const totalDarts = state.history.length * 3;
+        const avg = ((state.mode / totalDarts) * 3).toFixed(2);
+        alert(`🎯 Leg beendet!\nBenötigte Darts: ${totalDarts}\n3-Dart Average: ${avg}`);
+      }, 100);
+      inputBuffer = "";
+      updateInputDisplay();
+      return;
+    } else {
+      state.currentScore = rest;
+      state.history.push({ score: score, rest: rest, isBust: false });
+    }
+
+    inputBuffer = "";
+    updateInputDisplay();
+    saveState();
+    renderUI();
+  }
+
+  function undoLastThrow() {
+    if (state.history.length === 0) return;
+    const last = state.history.pop();
+    if (!last.isBust) {
+      state.currentScore += last.score;
+    }
+    saveState();
+    renderUI();
+  }
+
+  // Rendering
+  function renderUI() {
+    // Mode Buttons
+    document.getElementById("btn-301").className = `mode-btn ${state.mode === 301 ? "active" : ""}`;
+    document.getElementById("btn-501").className = `mode-btn ${state.mode === 501 ? "active" : ""}`;
+
+    // Main Score
+    document.getElementById("score-val").innerText = state.currentScore;
+
+    // Checkout Path
+    const checkoutBox = document.getElementById("checkout-box");
+    const checkoutVal = document.getElementById("checkout-val");
+    if (CHECKOUTS[state.currentScore]) {
+      checkoutBox.className = "checkout-box";
+      checkoutVal.innerText = CHECKOUTS[state.currentScore];
+    } else {
+      checkoutBox.className = "checkout-box none";
+    }
+
+    // Stats
+    const totalThrows = state.history.length;
+    const dartsThrown = totalThrows * 3;
+    const totalScored = state.mode - state.currentScore;
+    const avg = dartsThrown > 0 ? ((totalScored / dartsThrown) * 3).toFixed(2) : "0.0";
+    
+    document.getElementById("stat-avg").innerText = avg;
+    document.getElementById("stat-darts").innerText = dartsThrown;
+
+    if (totalThrows > 0) {
+      const lastEntry = state.history[totalThrows - 1];
+      document.getElementById("stat-last").innerText = lastEntry.isBust ? `Bust (${lastEntry.attempted})` : lastEntry.score;
+    } else {
+      document.getElementById("stat-last").innerText = "-";
+    }
+
+    // History Log
+    const list = document.getElementById("history-list");
+    list.innerHTML = "";
+    state.history.forEach((h, index) => {
+      const row = document.createElement("div");
+      row.className = "history-row";
+      row.innerHTML = `
+        <span>#${index + 1}: ${h.isBust ? '<span style="color: var(--danger)">Bust</span>' : '+' + h.score}</span>
+        <span class="history-rest">Rest: ${h.rest}</span>
+      `;
+      list.appendChild(row);
+    });
+  }
+
+  // Physische Tastatur-Unterstützung
+  window.addEventListener("keydown", (e) => {
+    if (e.key >= "0" && e.key <= "9") {
+      appendDigit(e.key);
+    } else if (e.key === "Backspace") {
+      deleteDigit();
+    } else if (e.key === "Enter") {
+      submitScore();
+    }
+  });
+</script>
+
+</body>
+</html>
