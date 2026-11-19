@@ -40,7 +40,7 @@ export function renderX01(root, match, ctx) {
     else if (t.bust) { toast("Überworfen!", "bust"); speak("Überworfen"); }
     else {
       if (t.score === 180) toast("🎯 180!", "good");
-      speak(t.score === 0 ? "Kein Score" : t.score);
+      speak(t.score === 0 ? "No Score" : t.score);
     }
   }
 
