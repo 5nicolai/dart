@@ -5,6 +5,7 @@ export const SCHEMA = 1;
 export const DEFAULT_SETTINGS = {
   haptics: true,
   voice: false,
+  requireDelay: 5, // Sekunden zwischen Score-Ansage und "you require"-Ansage (0 = aus)
   wakeLock: true,
   inputMode: "visit", // visit | dart
   lastSetup: {},

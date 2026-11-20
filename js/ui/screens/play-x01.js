@@ -45,17 +45,19 @@ export function renderX01(root, match, ctx) {
     }
   }
 
-  // Caller: "<Name>, you require <Rest>" – 5 s nach der Score-Ansage, wenn ein Finish möglich ist
+  // Caller: "<Name>, you require <Rest>" – mit einstellbarer Pause nach der Score-Ansage, wenn ein Finish möglich ist
   let requireTimer = null;
   function cancelRequire() {
     if (requireTimer) { clearTimeout(requireTimer); requireTimer = null; }
   }
   function scheduleRequire() {
     cancelRequire();
+    const delay = Number(get().settings.requireDelay ?? 5);
+    if (!(delay > 0)) return;
     const p = st.players[st.current];
     if (!p || !p.opened || !checkout(p.remaining, 3, cfg.outMode)) return;
     const text = `${cfg.players[st.current].name}, you require ${p.remaining}`;
-    requireTimer = setTimeout(() => { requireTimer = null; speak(text); }, 5000);
+    requireTimer = setTimeout(() => { requireTimer = null; speak(text); }, delay * 1000);
   }
 
   function commit(ev) {

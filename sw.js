@@ -1,5 +1,5 @@
 // Service Worker: offline-fähig. Bei jeder Veröffentlichung VERSION erhöhen.
-const VERSION = "dartpro-v2";
+const VERSION = "dartpro-v3";
 const ASSETS = [
   "./",
   "./index.html",
