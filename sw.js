@@ -1,5 +1,5 @@
 // Service Worker: offline-fähig. Bei jeder Veröffentlichung VERSION erhöhen.
-const VERSION = "dartpro-v1";
+const VERSION = "dartpro-v2";
 const ASSETS = [
   "./",
   "./index.html",
@@ -18,6 +18,7 @@ const ASSETS = [
   "./js/engine/x01.js",
   "./js/stats.js",
   "./js/store.js",
+  "./js/sw-update.js",
   "./js/ui/actions.js",
   "./js/ui/components/chart.js",
   "./js/ui/dom.js",
@@ -60,7 +61,8 @@ self.addEventListener("fetch", (e) => {
     const cache = await caches.open(VERSION);
     const key = req.mode === "navigate" ? "./index.html" : req;
     const cached = await cache.match(key, { ignoreSearch: req.mode === "navigate" });
-    const network = fetch(req).then((res) => {
+    // HTTP-Cache des Browsers revalidieren, damit wirklich die aktuelle Datei geholt wird
+    const network = fetch(req.mode === "navigate" ? req : new Request(req, { cache: "no-cache" })).then((res) => {
       if (res.ok && req.mode !== "navigate") cache.put(req, res.clone());
       return res;
     }).catch(() => null);

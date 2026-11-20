@@ -161,8 +161,13 @@ button.list-item:active { background: var(--card-2); }
 .pcard {
   background: var(--card); border-radius: var(--radius); padding: 10px 12px; border: 2px solid transparent;
   display: flex; flex-direction: column; gap: 2px; position: relative; min-width: 0;
+  border-color: color-mix(in srgb, var(--pc, transparent) 55%, transparent);
 }
-.pcard.active { border-color: var(--accent); background: linear-gradient(180deg, var(--accent-soft), var(--card) 70%); }
+.pcard.active {
+  border-color: var(--pc, var(--accent));
+  box-shadow: 0 0 0 1px var(--pc, var(--accent)), 0 0 14px color-mix(in srgb, var(--pc, var(--accent)) 45%, transparent);
+  background: linear-gradient(180deg, color-mix(in srgb, var(--pc, var(--accent)) 20%, var(--card)), var(--card) 70%);
+}
 .pcard .name { font-weight: 800; font-size: 0.95rem; display: flex; align-items: center; gap: 6px; white-space: nowrap; overflow: hidden; }
 .pcard .name .throw { width: 8px; height: 8px; border-radius: 50%; background: var(--warn); flex-shrink: 0; }
 .pcard .rest { font-size: 3.4rem; font-weight: 900; line-height: 1; letter-spacing: -2px; font-variant-numeric: tabular-nums; }

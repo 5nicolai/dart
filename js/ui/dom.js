@@ -44,10 +44,12 @@ export function speak(text) {
   try {
     speechSynthesis.cancel();
     const u = new SpeechSynthesisUtterance(String(text));
-    u.lang = "de-DE";
-    voices = voices || speechSynthesis.getVoices();
-    const de = voices.find((v) => v.lang && v.lang.startsWith("de"));
-    if (de) u.voice = de;
+    // Caller spricht immer Englisch (bevorzugt britisch)
+    u.lang = "en-GB";
+    if (!voices || !voices.length) voices = speechSynthesis.getVoices();
+    const lang = (v) => (v.lang || "").replace("_", "-").toLowerCase();
+    const en = voices.find((v) => lang(v) === "en-gb") || voices.find((v) => lang(v).startsWith("en"));
+    if (en) u.voice = en;
     u.rate = 1.05;
     speechSynthesis.speak(u);
   } catch { /* Sprachausgabe nicht verfügbar */ }

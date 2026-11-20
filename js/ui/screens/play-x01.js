@@ -37,14 +37,29 @@ export function renderX01(root, match, ctx) {
     }
     if (t.setWon) { toast(`Set für ${name}!`, "good"); speak(`Game shot and the set. ${name}`); }
     else if (t.legWon) { toast(`Leg für ${name} (${darts(st, t.p, -1)} Darts)`, "good"); speak(`Game shot. ${name}`); }
-    else if (t.bust) { toast("Überworfen!", "bust"); speak("Überworfen"); }
+    else if (t.bust) { toast("Überworfen!", "bust"); speak("No score"); scheduleRequire(); }
     else {
       if (t.score === 180) toast("🎯 180!", "good");
-      speak(t.score === 0 ? "No Score" : t.score);
+      speak(t.score === 0 ? "No score" : t.score);
+      scheduleRequire();
     }
   }
 
+  // Caller: "<Name>, you require <Rest>" – 5 s nach der Score-Ansage, wenn ein Finish möglich ist
+  let requireTimer = null;
+  function cancelRequire() {
+    if (requireTimer) { clearTimeout(requireTimer); requireTimer = null; }
+  }
+  function scheduleRequire() {
+    cancelRequire();
+    const p = st.players[st.current];
+    if (!p || !p.opened || !checkout(p.remaining, 3, cfg.outMode)) return;
+    const text = `${cfg.players[st.current].name}, you require ${p.remaining}`;
+    requireTimer = setTimeout(() => { requireTimer = null; speak(text); }, 5000);
+  }
+
   function commit(ev) {
+    cancelRequire();
     const prev = countTurns(st);
     st = addEvent(match, ev);
     buffer = ""; mult = 1;
@@ -88,6 +103,7 @@ export function renderX01(root, match, ctx) {
   function doUndo() {
     if (mode === "visit" && buffer) { buffer = buffer.slice(0, -1); draw(); return; }
     if (!match.events.length) return;
+    cancelRequire();
     st = undo(match);
     buffer = ""; mult = 1;
     toast("Rückgängig");
@@ -128,13 +144,13 @@ export function renderX01(root, match, ctx) {
       const lastTurn = [...leg.turns].reverse().find((t) => t.p === i);
       const legsTxt = showLegs ? (cfg.sets > 1 ? `S ${p.sets} · L ${p.legs}` : `Legs ${p.legs}`) : null;
       const info = [
-        h("div", { class: "name" }, st.legStarter === i && n > 1 && h("span", { class: "throw", title: "Anwurf" }), h("span", { style: { color: pl.color } }, "●"), pl.name),
+        h("div", { class: "name" }, st.legStarter === i && n > 1 && h("span", { class: "throw", title: "Anwurf" }), pl.name),
         n > 2 && h("div", { class: "line" }, h("span", null, "Ø ", h("b", null, fmt(s.avg, 1))), legsTxt && h("span", { class: "legs" }, legsTxt), h("span", null, "Letzte ", h("b", null, lastTurn ? (lastTurn.bust ? "Bust" : lastTurn.score) : "–"))),
       ];
       if (n > 2) {
-        return h("div", { class: `pcard ${st.current === i ? "active" : ""}` }, h("div", { class: "info" }, info), h("div", { class: "rest" }, p.remaining));
+        return h("div", { class: `pcard ${st.current === i ? "active" : ""}`, style: `--pc:${pl.color}` }, h("div", { class: "info" }, info), h("div", { class: "rest" }, p.remaining));
       }
-      return h("div", { class: `pcard ${st.current === i ? "active" : ""}` },
+      return h("div", { class: `pcard ${st.current === i ? "active" : ""}`, style: `--pc:${pl.color}` },
         info,
         h("div", { class: "rest" }, p.remaining),
         h("div", { class: "line" }, h("span", null, "Ø ", h("b", null, fmt(s.avg, 1))), h("span", null, "Darts ", h("b", null, darts(st, i)))),
@@ -222,6 +238,6 @@ export function renderX01(root, match, ctx) {
 
   draw();
   if (st.finished) ctx.finish();
-  return () => window.removeEventListener("keydown", onKey);
+  return () => { cancelRequire(); window.removeEventListener("keydown", onKey); };
 }
 

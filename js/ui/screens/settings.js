@@ -1,5 +1,6 @@
 import { h, topbar, switchRow, seg, toast, confirmDialog, speak } from "../dom.js";
 import { get, update, exportJSON, importJSON, resetAll } from "../../store.js";
+import { updateApp } from "../../sw-update.js";
 
 export function renderSettings(root) {
   const draw = () => {
@@ -23,10 +24,18 @@ export function renderSettings(root) {
       topbar("Einstellungen"),
       h("section", { class: "card" }, h("h2", null, "Während des Spiels"),
         switchRow("Vibration", s.haptics, (v) => set("haptics", v), "Kurzes Feedback bei jedem Tipp"),
-        switchRow("Score-Ansage", s.voice, (v) => { set("voice", v); if (v) setTimeout(() => speak("Einhundertachtzig"), 50); }, "Sprachausgabe der Aufnahmen (Deutsch)"),
+        switchRow("Score-Ansage", s.voice, (v) => { set("voice", v); if (v) setTimeout(() => speak("One hundred and eighty"), 50); }, "Caller-Ansage der Aufnahmen (Englisch)"),
         switchRow("Bildschirm anlassen", s.wakeLock, (v) => set("wakeLock", v), "Verhindert, dass das Display im Spiel ausgeht"),
         h("div", { class: "field", style: { marginTop: "8px" } }, h("label", null, "Standard-Eingabe bei X01"),
           seg([["visit", "Aufnahme (Summe)"], ["dart", "Einzeldart"]], s.inputMode, (v) => set("inputMode", v))),
+      ),
+      h("section", { class: "card stack" }, h("h2", null, "App"),
+        h("p", { class: "small muted" }, "Lädt die neueste Version der Web-App. Deine Daten bleiben erhalten."),
+        h("button", { class: "btn block", onclick: async (e) => {
+          const btn = e.currentTarget;
+          btn.disabled = true; btn.textContent = "Suche Update…";
+          if (!(await updateApp())) { btn.disabled = false; btn.textContent = "⟳ App aktualisieren"; }
+        } }, "⟳ App aktualisieren"),
       ),
       h("section", { class: "card stack" }, h("h2", null, "Daten"),
         h("p", { class: "small muted" }, "Alle Daten liegen nur auf diesem Gerät im Browser. Erstelle ab und zu eine Sicherung."),

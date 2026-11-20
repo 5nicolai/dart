@@ -20,7 +20,7 @@ export function renderCricket(root, match, ctx) {
     } else if (st.turns.length > prevTurns) {
       const t = st.turns[st.turns.length - 1];
       if (t.marks >= 5) toast(`${t.marks} Marks!`, "good");
-      speak(t.marks ? `${t.marks} Marks` : "Keine Marks");
+      speak(t.marks ? `${t.marks} Marks` : "No marks");
     }
   }
 
