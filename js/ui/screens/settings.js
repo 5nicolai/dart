@@ -1,6 +1,23 @@
 import { h, topbar, switchRow, seg, toast, confirmDialog, speak } from "../dom.js";
-import { get, update, exportJSON, importJSON, resetAll } from "../../store.js";
+import { get, update, exportJSON, importJSON, resetAll, REQUIRE_DELAYS } from "../../store.js";
 import { updateApp } from "../../sw-update.js";
+
+const VOLUME_STEPS = [["low", "Leise"], ["mid", "Mittel"], ["high", "Laut"]];
+
+// Schieberegler mit drei Stufen für die Lautstärke der Ansage
+function volumeSlider(value, onChange) {
+  const idx = Math.max(0, VOLUME_STEPS.findIndex(([k]) => k === value));
+  return h("div", { class: "field", style: { marginTop: "8px" } },
+    h("label", { for: "voice-volume" }, "Lautstärke der Ansage"),
+    h("input", {
+      id: "voice-volume", class: "range", type: "range", min: 0, max: VOLUME_STEPS.length - 1, step: 1, value: idx,
+      "aria-valuetext": VOLUME_STEPS[idx][1],
+      onchange: (e) => onChange(VOLUME_STEPS[Number(e.target.value)][0]),
+    }),
+    h("div", { class: "range-labels small" },
+      VOLUME_STEPS.map(([k, label], i) => h("span", { class: i === idx ? "on" : "" }, label))),
+  );
+}
 
 export function renderSettings(root) {
   const draw = () => {
@@ -26,8 +43,9 @@ export function renderSettings(root) {
         switchRow("Vibration", s.haptics, (v) => set("haptics", v), "Kurzes Feedback bei jedem Tipp"),
         switchRow("Score-Ansage", s.voice, (v) => { set("voice", v); if (v) setTimeout(() => speak("One hundred and eighty"), 50); }, "Caller-Ansage der Aufnahmen (Englisch)"),
         h("div", { class: "field", style: { marginTop: "8px" } }, h("label", null, "Pause bis zur Finish-Ansage"),
-          seg([[0, "Aus"], [3, "3 s"], [5, "5 s"], [8, "8 s"], [10, "10 s"]], s.requireDelay ?? 5, (v) => set("requireDelay", v)),
+          seg(REQUIRE_DELAYS.map((d) => [d, d ? `${d} s` : "Aus"]), s.requireDelay ?? 3, (v) => set("requireDelay", v)),
           h("p", { class: "small muted" }, "Wartezeit nach der Score-Ansage, bevor „Name, you require …“ gesagt wird.")),
+        volumeSlider(s.voiceVolume, (v) => { set("voiceVolume", v); speak("One hundred and eighty"); }),
         switchRow("Bildschirm anlassen", s.wakeLock, (v) => set("wakeLock", v), "Verhindert, dass das Display im Spiel ausgeht"),
         h("div", { class: "field", style: { marginTop: "8px" } }, h("label", null, "Standard-Eingabe bei X01"),
           seg([["visit", "Aufnahme (Summe)"], ["dart", "Einzeldart"]], s.inputMode, (v) => set("inputMode", v))),

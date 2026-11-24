@@ -1,5 +1,5 @@
 // Kleine DOM-Helfer ohne Framework
-import { get } from "../store.js";
+import { get, VOICE_VOLUMES } from "../store.js";
 
 export function h(tag, attrs, ...children) {
   const el = document.createElement(tag);
@@ -38,6 +38,11 @@ export function haptic(ms = 12) {
   if (get().settings.haptics && navigator.vibrate) navigator.vibrate(ms);
 }
 
+// Lautstärke der Ansage (0..1) aus den Einstellungen
+export function voiceVolume() {
+  return VOICE_VOLUMES[get().settings.voiceVolume] ?? 1;
+}
+
 let voices = null;
 export function speak(text) {
   if (!get().settings.voice || !("speechSynthesis" in window)) return;
@@ -51,6 +56,7 @@ export function speak(text) {
     const en = voices.find((v) => lang(v) === "en-gb") || voices.find((v) => lang(v).startsWith("en"));
     if (en) u.voice = en;
     u.rate = 1.05;
+    u.volume = voiceVolume();
     speechSynthesis.speak(u);
   } catch { /* Sprachausgabe nicht verfügbar */ }
 }

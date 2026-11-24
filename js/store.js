@@ -5,11 +5,23 @@ export const SCHEMA = 1;
 export const DEFAULT_SETTINGS = {
   haptics: true,
   voice: false,
-  requireDelay: 5, // Sekunden zwischen Score-Ansage und "you require"-Ansage (0 = aus)
+  requireDelay: 3, // Sekunden zwischen Score-Ansage und "you require"-Ansage (0 = aus)
+  voiceVolume: "high", // Lautstärke der Ansage: low | mid | high
   wakeLock: true,
   inputMode: "visit", // visit | dart
   lastSetup: {},
 };
+
+// Erlaubte Werte für die Einstellungen
+export const REQUIRE_DELAYS = [0, 1, 2, 3, 6];
+export const VOICE_VOLUMES = { low: 0.3, mid: 0.65, high: 1 };
+
+// Auf den nächstgelegenen erlaubten Pausenwert runden (z. B. alte Werte 5/8/10 s → 6 s)
+function snapDelay(v) {
+  const n = Number(v);
+  if (!Number.isFinite(n)) return DEFAULT_SETTINGS.requireDelay;
+  return REQUIRE_DELAYS.reduce((best, d) => (Math.abs(d - n) < Math.abs(best - n) ? d : best));
+}
 
 export function defaultData() {
   return { v: SCHEMA, players: [], matches: [], activeId: null, settings: { ...DEFAULT_SETTINGS } };
@@ -22,6 +34,8 @@ export function migrate(raw) {
   if (Array.isArray(raw.matches)) d.matches = raw.matches.filter((m) => m && m.id && m.type && m.config && Array.isArray(m.events));
   if (raw.activeId && d.matches.some((m) => m.id === raw.activeId)) d.activeId = raw.activeId;
   d.settings = { ...DEFAULT_SETTINGS, ...(raw.settings || {}) };
+  d.settings.requireDelay = snapDelay(d.settings.requireDelay);
+  if (!(d.settings.voiceVolume in VOICE_VOLUMES)) d.settings.voiceVolume = DEFAULT_SETTINGS.voiceVolume;
   return d;
 }
 

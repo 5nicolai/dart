@@ -52,7 +52,7 @@ export function renderX01(root, match, ctx) {
   }
   function scheduleRequire() {
     cancelRequire();
-    const delay = Number(get().settings.requireDelay ?? 5);
+    const delay = Number(get().settings.requireDelay ?? 3);
     if (!(delay > 0)) return;
     const p = st.players[st.current];
     if (!p || !p.opened || !checkout(p.remaining, 3, cfg.outMode)) return;
